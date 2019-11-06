@@ -20,31 +20,32 @@ class GameStatus():
 class Game(models.Model):
     MIN_CELL = 0
     MAX_CELL = 63
+    WIDTH = 8
     cat_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="games_as_cat")
     mouse_user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,
                                    null=True, related_name="games_as_mouse")
     # Cat 1 position
     cat1 = models.IntegerField(validators=[
-                                            MaxValueValidator(MAX_CELL),
-                                            MinValueValidator(MIN_CELL)
+                                            MaxValueValidator(63),
+                                            MinValueValidator(0)
                                           ],
                                default=0) # Not NULL is set by default
     # Cat 2 position
     cat2 = models.IntegerField(validators=[
-                                            MaxValueValidator(MAX_CELL),
-                                            MinValueValidator(MIN_CELL)
+                                            MaxValueValidator(63),
+                                            MinValueValidator(0)
                                           ],
                                default=2)
     # Cat 3 position
     cat3 = models.IntegerField(validators=[
-                                            MaxValueValidator(MAX_CELL),
-                                            MinValueValidator(MIN_CELL)
+                                            MaxValueValidator(63),
+                                            MinValueValidator(0)
                                           ],
                                default=4)
     # Cat 4 position
     cat4 = models.IntegerField(validators=[
-                                            MaxValueValidator(MAX_CELL),
-                                            MinValueValidator(MIN_CELL)
+                                            MaxValueValidator(63),
+                                            MinValueValidator(0)
                                           ],
                                default=6)
     # Mouse position
@@ -53,6 +54,11 @@ class Game(models.Model):
     cat_turn = models.BooleanField(default=True)
     # Game status
     status = models.IntegerField(default=GameStatus.CREATED)
+
+    # Game moves
+    @property
+    def moves(self):
+        return Move.objects.filter(game=self)
 
     def __str_game_status(self):
         if self.status == 0:
@@ -65,8 +71,8 @@ class Game(models.Model):
     def __pos_is_valid(self, position):
         if not position:
             return True
-        odd_col = bool((position//8)%2)
-        odd_row = bool((position%8)%2)
+        odd_col = bool((position//Game.WIDTH)%2)
+        odd_row = bool((position%Game.WIDTH)%2)
         return not (odd_col ^ odd_row)
 
     def clean(self, exclude=None):
@@ -122,30 +128,46 @@ class Counter(models.Model):
 
 
 class Move(models.Model):
-    # def __game_active_validator(game):
-    #     if game.status != GameStatus.ACTIVE:
-    #         return false
-    #
-    # origin = models.IntegerField()
-    # target = models.IntegerField()
-    # game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    # player = models.ForeignKey(User, on_delete=models.CASCADE)
-    # date = models.DateField(default=datetime.date.today)
-    #
-    # def __pos_is_valid(self, position):
-    #     if not position:
-    #         return False
-    #     odd_col = bool((position//8)%2)
-    #     odd_row = bool((position%8)%2)
-    #     return not (odd_col ^ odd_row)
-    #
-    # def clean_fields(self, exclude=None):
-    #     if not self.__pos_is_valid(self.origin) or not\
-    #     self.__pos_is_valid(self.target):
-    #         raise ValidationError(MSG_ERROR_MOVE)
-    #
-    # def save(self, *args, **kwargs):
-    #     self.clean_fields()
-    #     super(Move, self).save(*args, **kwargs)
-    pass
+    origin = models.IntegerField(validators=[
+                                            MaxValueValidator(Game.MAX_CELL),
+                                            MinValueValidator(Game.MIN_CELL)
+                                          ])
+    target = models.IntegerField(validators=[
+                                            MaxValueValidator(Game.MAX_CELL),
+                                            MinValueValidator(Game.MIN_CELL)
+                                          ])
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    player = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(default=datetime.date.today)
+
+    def __pos_to_list(self, position):
+        return [(position//Game.WIDTH) + 1 , (position%Game.WIDTH) + 1]
+
+    def __cat_valid_move(self):
+        origin_lst = self.__pos_to_list(self.origin)
+        target_lst = self.__pos_to_list(self.target)
+        down_lst = [x+1 for x in origin_lst]
+        if down_lst == target_lst:
+            return True
+        return False
+
+    def __mouse_valid_move(self):
+        origin_lst = self.__pos_to_list(self.origin)
+        target_lst = self.__pos_to_list(self.target)
+        down_lst = [x+1 for x in origin_lst]
+        up_lst = [x-1 for x in origin_lst]
+        if down_lst == target_lst:
+            return True
+        if up_lst == target_lst:
+            return True
+        return False
+
+    def save(self, *args, **kwargs):
+        if self.game.status != GameStatus.ACTIVE:
+            raise ValidationError(MSG_ERROR_MOVE)
+        if self.player == self.game.cat_user and not self.__cat_valid_move():
+            raise ValidationError(MSG_ERROR_MOVE)
+        if self.player == self.game.mouse_user and not self.__mouse_valid_move():
+            raise ValidationError(MSG_ERROR_MOVE)
+        super(Move, self).save(*args, **kwargs)
     # def __str__() TODO: Hacer para tests opcionales
