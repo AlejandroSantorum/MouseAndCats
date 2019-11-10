@@ -25,7 +25,8 @@ SECRET_KEY = '=rn765e81uif(ckokgr)6#!lb8v+vg@xfvkim4a%21f_$$@j=n'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+HEROKU_URL = u'agile-bastion-34037.herokuapp.com'
+ALLOWED_HOSTS = [HEROKU_URL, u'localhost', u'127.0.0.1']
 
 
 # Application definition
