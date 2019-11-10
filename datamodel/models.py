@@ -146,22 +146,32 @@ class Move(models.Model):
     def __cat_valid_move(self):
         origin_lst = self.__pos_to_list(self.origin)
         target_lst = self.__pos_to_list(self.target)
-        down_lst = [x+1 for x in origin_lst]
-        if down_lst == target_lst:
+        SE_lst = [x+1 for x in origin_lst]
+        SW_lst = [origin_lst[0]+1, origin_lst[1]-1]
+        if SE_lst == target_lst:
+            return True
+        if SW_lst == target_lst:
             return True
         return False
 
     def __mouse_valid_move(self):
         origin_lst = self.__pos_to_list(self.origin)
         target_lst = self.__pos_to_list(self.target)
-        down_lst = [x+1 for x in origin_lst]
-        up_lst = [x-1 for x in origin_lst]
-        if down_lst == target_lst:
+        SE_lst = [x+1 for x in origin_lst]
+        SW_lst = [origin_lst[0]+1, origin_lst[1]-1]
+        NW_lst = [x-1 for x in origin_lst]
+        NE_lst = [origin_lst[0]-1, origin_lst[1]+1]
+        if SE_lst == target_lst:
             return True
-        if up_lst == target_lst:
+        if SW_lst == target_lst:
+            return True
+        if NW_lst == target_lst:
+            return True
+        if NE_lst == target_lst:
             return True
         return False
 
+    # TODO: Posible automatización del movimiento al crearlo
     def save(self, *args, **kwargs):
         if self.game.status != GameStatus.ACTIVE:
             raise ValidationError(MSG_ERROR_MOVE)
