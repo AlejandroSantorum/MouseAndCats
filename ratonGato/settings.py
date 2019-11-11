@@ -75,6 +75,7 @@ TEMPLATES = [
     },
 ]
 
+STATICFILES_DIRS = [STATIC_DIR, ]
 WSGI_APPLICATION = 'ratonGato.wsgi.application'
 
 
