@@ -85,7 +85,7 @@ class Game(models.Model):
         if self.status == GameStatus.FINISHED and not self.mouse_user:
             raise ValidationError(MSG_ERROR_GAMESTATUS)
 
-    def save(self, *args, **kwargs): #TODO: Decide if this calls clean or not
+    def save(self, *args, **kwargs):
         if self.mouse_user and self.status == GameStatus.CREATED:
             self.status = GameStatus.ACTIVE
         # Validations for test10 (valid cells) below:
@@ -121,10 +121,6 @@ class Game(models.Model):
         ret_str = "("+id+", "+status+")\tCat "+c_turn+" cat_user_test"+c_pos+\
                " --- Mouse "+m_turn+" mouse_user_test"+m_pos
         return ret_str
-
-
-class Counter(models.Model):
-    pass
 
 
 class Move(models.Model):
@@ -181,3 +177,32 @@ class Move(models.Model):
             raise ValidationError(MSG_ERROR_MOVE)
         super(Move, self).save(*args, **kwargs)
     # def __str__() TODO: Hacer para tests opcionales
+
+class CounterManager(models.Manager):
+    def inc(self):
+        objs = super().get_queryset()
+        if len(objs) == 0:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO datamodel_counter (value)
+                    VALUES (1) """)
+            return 1
+        val = self.get_current_value()
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE datamodel_counter SET value="+str(val+1))
+        return val+1
+
+    def get_current_value(self):
+        objs = super().get_queryset()
+        if len(objs) == 0:
+            return 0
+        return objs[0].value
+
+
+class Counter(models.Model):
+    value = models.IntegerField(default=0)
+    objects = CounterManager()
+    def save(self, *args, **kwargs):
+        raise ValidationError(MSG_ERROR_NEW_COUNTER)
