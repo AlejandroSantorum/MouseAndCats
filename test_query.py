@@ -32,15 +32,15 @@ def test_query():
     # Add moves to the game
     move1 = Move(game=curr_game, origin=2, target=11, player=u10)
     move1.save()
-    curr_game.cat2 = 11
-    curr_game.cat_turn = False
-    curr_game.save()
+    # curr_game.cat2 = 11
+    # curr_game.cat_turn = False
+    # curr_game.save()
     print(curr_game)
     move2 = Move(game=curr_game, origin=59, target=52, player=u11)
     move2.save()
-    curr_game.mouse = 52
-    curr_game.cat_turn = True
-    curr_game.save()
+    # curr_game.mouse = 52
+    # curr_game.cat_turn = True
+    # curr_game.save()
     print(curr_game)
 
 

@@ -102,6 +102,9 @@ class Game(models.Model):
         super(Game, self).save(*args, **kwargs)
 
 
+    def _get_cat_places(self):
+        return [self.cat1, self.cat2, self.cat3, self.cat4]
+
     def __str__(self):
         id = str(self.id)
         status = self.__str_game_status()
@@ -140,6 +143,13 @@ class Move(models.Model):
         return [(position//Game.WIDTH) + 1 , (position%Game.WIDTH) + 1]
 
     def __cat_valid_move(self):
+        if not self.game.cat_turn:
+            return False
+        cats = self.game._get_cat_places()
+        if self.origin not in cats or self.target in cats:
+            return False
+        if self.target == self.game.mouse: # TODO: Check if we need to add game finished here
+            return False
         origin_lst = self.__pos_to_list(self.origin)
         target_lst = self.__pos_to_list(self.target)
         SE_lst = [x+1 for x in origin_lst]
@@ -151,6 +161,13 @@ class Move(models.Model):
         return False
 
     def __mouse_valid_move(self):
+        if self.game.cat_turn:
+            return False
+        cats = self.game._get_cat_places()
+        if self.target in cats:
+            return False
+        if self.origin != self.game.mouse:
+            return False
         origin_lst = self.__pos_to_list(self.origin)
         target_lst = self.__pos_to_list(self.target)
         SE_lst = [x+1 for x in origin_lst]
@@ -169,13 +186,33 @@ class Move(models.Model):
 
     # TODO: Posible automatización del movimiento al crearlo
     def save(self, *args, **kwargs):
+        if self.target < 0 or self.target > 63:
+            raise ValidationError(MSG_ERROR_MOVE)
+        if self.player != self.game.mouse_user and\
+           self.player != self.game.cat_user:
+            raise ValidationError(MSG_ERROR_MOVE)
         if self.game.status != GameStatus.ACTIVE:
             raise ValidationError(MSG_ERROR_MOVE)
         if self.player == self.game.cat_user and not self.__cat_valid_move():
             raise ValidationError(MSG_ERROR_MOVE)
         if self.player == self.game.mouse_user and not self.__mouse_valid_move():
             raise ValidationError(MSG_ERROR_MOVE)
+
         super(Move, self).save(*args, **kwargs)
+        if self.player == self.game.mouse_user:
+            self.game.mouse = self.target
+            self.game.cat_turn = True
+        else:
+            if self.origin == self.game.cat1:
+                self.game.cat1 = self.target
+            elif self.origin == self.game.cat2:
+                self.game.cat2 = self.target
+            elif self.origin == self.game.cat3:
+                self.game.cat3 = self.target
+            else:
+                self.game.cat4 = self.target
+            self.game.cat_turn = False
+        self.game.save()
     # def __str__() TODO: Hacer para tests opcionales
 
 class CounterManager(models.Manager):
