@@ -69,7 +69,7 @@ def signup(request):
         try:
             validate_password(cd['password'])
         except ValidationError as err:
-            user_form.add_error('password', err.messages[0][:-1] + ' or ' + err.messages[1])
+            user_form.add_error('password', ' '.join(err.messages))
             render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
         try:
