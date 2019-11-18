@@ -1,0 +1,2 @@
+GAME_SELECTED_SESSION_ID = None
+ERROR_MESSAGE_ID = 'msg_error'
