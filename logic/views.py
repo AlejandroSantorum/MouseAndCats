@@ -2,7 +2,10 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from logic.forms import UserForm
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from logic.forms import UserForm, SignupForm
 from datamodel import constants
 
 
@@ -29,17 +32,14 @@ def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        print(username, password) # DEBUG
         user_form = UserForm(data=request.POST)
         user = authenticate(username=username, password=password)
 
         if user:
             login(request, user)
-            request.session['nickname'] = username
             return render(request, "mouse_cat/index.html")
         else:
-            user_form.add_error('username', 'Username/password is not valid|Usuario/clave no válidos')
-            print(user_form.errors)
+            user_form.add_error('username', 'Username/password is not valid')
             context_dict={'user_form': user_form}
             return render(request, "mouse_cat/login.html", context_dict)
 
@@ -49,13 +49,42 @@ def user_login(request):
 
 @login_required
 def user_logout(request):
-    context_dict = {'user': request.session.get('nickname')}
+    context_dict = {'user': request.user.username}
     logout(request)
     return render(request, "mouse_cat/logout.html", context_dict)
 
-
+@anonymous_required
 def signup(request):
-    return render(request, "mouse_cat/signup.html")
+    if request.method == 'POST':
+        user_form = SignupForm(data=request.POST)
+        if user_form.is_valid():
+            cd = user_form.cleaned_data
+        else:
+            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
+
+        if cd['password'] != cd['password2']:
+            user_form.add_error('password2', 'Password and Repeat password are not the same')
+            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
+
+        try:
+            validate_password(cd['password'])
+        except ValidationError as err:
+            user_form.add_error('password', err.messages[0][:-1] + ' or ' + err.messages[1])
+            render(request, "mouse_cat/signup.html", {'user_form': user_form})
+
+        try:
+            user = user_form.save()
+            user.set_password(user.password)
+            user.save()
+            login(request, user)
+            return render(request, "mouse_cat/index.html")
+        except ValueError:
+            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
+
+        return render(request, "mouse_cat/index.html")
+
+    context_dict = {'user_form': SignupForm()}
+    return render(request, "mouse_cat/signup.html", context_dict)
 
 
 def counter(request):

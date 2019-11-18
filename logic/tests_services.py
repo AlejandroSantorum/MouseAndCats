@@ -341,76 +341,75 @@ class LogInOutServiceTests(ServiceBaseTest):
         self.assertFalse(self.client1.session.get(USER_SESSION_ID, False))
 
 
-# class SignupServiceTests(ServiceBaseTest):
-#     def setUp(self):
-#         super().setUp()
-#         self.paramsUser1.update({"password2": self.paramsUser1["password"]})
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test0(self):
-#         """ Validación correcta del formulario de alta """
-#         User.objects.filter(id=self.user1.id).delete()
-#         self.assertTrue(forms.SignupForm(self.paramsUser1).is_valid())
-#
-#     def test1(self):
-#         """ Solo los usuarios anónimos tienen acceso """
-#         self.validate_anonymous_required(self.client1, SIGNUP_SERVICE)
-#
-#     def test2(self):
-#         """ Alta correcta de usuarios """
-#         User.objects.filter(id=self.user1.id).delete()
-#         n_user = User.objects.count()
-#
-#         self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
-#         self.assertEquals(User.objects.count(), n_user + 1)
-#
-#         user = User.objects.get(username=self.paramsUser1["username"])
-#         self.assertEqual(user.username, self.paramsUser1["username"])
-#         self.assertNotEqual(user.password, self.paramsUser1["password"])
-#         self.assertTrue(user.check_password(self.paramsUser1["password"]))
-#
-#     def test3(self):
-#         """ Clave y repetición de clave no coinciden """
-#         self.paramsUser1["username"] = self.paramsUser1["username"] + "XXX"
-#         self.paramsUser1["password2"] = self.paramsUser1["password"] + "XXX"
-#         n_user = User.objects.count()
-#
-#         response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
-#         self.is_signup_error1(response)
-#         self.assertEquals(User.objects.count(), n_user)
-#         with self.assertRaises(User.DoesNotExist):
-#             User.objects.get(username=self.paramsUser1["username"])
-#
-#     def test4(self):
-#         """ Usuario duplicado """
-#         User.objects.filter(id=self.user1.id).delete()
-#         pass_dummy = self.paramsUser1["username"] + "XXX"
-#         User.objects.create(username=self.paramsUser1["username"], password=pass_dummy)
-#         n_user = User.objects.count()
-#
-#         user = User.objects.get(username=self.paramsUser1["username"])
-#         self.assertEqual(user.username, self.paramsUser1["username"])
-#         self.assertEqual(user.password, pass_dummy)
-#
-#         response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
-#         self.is_signup_error2(response)
-#         self.assertEquals(User.objects.count(), n_user)
-#
-#         user = User.objects.get(username=self.paramsUser1["username"])
-#         self.assertEqual(user.username, self.paramsUser1["username"])
-#         self.assertEqual(user.password, pass_dummy)
-#
-#     def test5(self):
-#         """ Clave demasiado corta y simple """
-#         self.paramsUser1["username"] = self.paramsUser1["username"] + "XXX"
-#         self.paramsUser1["password2"] = self.paramsUser1["password"] = "abc"
-#         n_user = User.objects.count()
-#
-#         response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
-#         self.is_signup_error3(response)
-#         self.assertEquals(User.objects.count(), n_user)
+class SignupServiceTests(ServiceBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.paramsUser1.update({"password2": self.paramsUser1["password"]})
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test0(self):
+        """ Validación correcta del formulario de alta """
+        User.objects.filter(id=self.user1.id).delete()
+        self.assertTrue(forms.SignupForm(self.paramsUser1).is_valid())
+
+    def test1(self):
+        """ Solo los usuarios anónimos tienen acceso """
+        self.validate_anonymous_required(self.client1, SIGNUP_SERVICE)
+
+    def test2(self):
+        """ Alta correcta de usuarios """
+        User.objects.filter(id=self.user1.id).delete()
+        n_user = User.objects.count()
+        self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
+        self.assertEquals(User.objects.count(), n_user + 1)
+
+        user = User.objects.get(username=self.paramsUser1["username"])
+        self.assertEqual(user.username, self.paramsUser1["username"])
+        self.assertNotEqual(user.password, self.paramsUser1["password"])
+        self.assertTrue(user.check_password(self.paramsUser1["password"]))
+
+    def test3(self):
+        """ Clave y repetición de clave no coinciden """
+        self.paramsUser1["username"] = self.paramsUser1["username"] + "XXX"
+        self.paramsUser1["password2"] = self.paramsUser1["password"] + "XXX"
+        n_user = User.objects.count()
+
+        response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
+        self.is_signup_error1(response)
+        self.assertEquals(User.objects.count(), n_user)
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username=self.paramsUser1["username"])
+
+    def test4(self):
+        """ Usuario duplicado """
+        User.objects.filter(id=self.user1.id).delete()
+        pass_dummy = self.paramsUser1["username"] + "XXX"
+        User.objects.create(username=self.paramsUser1["username"], password=pass_dummy)
+        n_user = User.objects.count()
+
+        user = User.objects.get(username=self.paramsUser1["username"])
+        self.assertEqual(user.username, self.paramsUser1["username"])
+        self.assertEqual(user.password, pass_dummy)
+
+        response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
+        self.is_signup_error2(response)
+        self.assertEquals(User.objects.count(), n_user)
+
+        user = User.objects.get(username=self.paramsUser1["username"])
+        self.assertEqual(user.username, self.paramsUser1["username"])
+        self.assertEqual(user.password, pass_dummy)
+
+    def test5(self):
+        """ Clave demasiado corta y simple """
+        self.paramsUser1["username"] = self.paramsUser1["username"] + "XXX"
+        self.paramsUser1["password2"] = self.paramsUser1["password"] = "abc"
+        n_user = User.objects.count()
+
+        response = self.client1.post(reverse(SIGNUP_SERVICE), self.paramsUser1, follow=True)
+        self.is_signup_error3(response)
+        self.assertEquals(User.objects.count(), n_user)
 #
 #
 # class CounterServiceTests(ServiceBaseTest):
