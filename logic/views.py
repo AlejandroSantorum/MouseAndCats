@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from logic.forms import UserForm, SignupForm
 from datamodel import constants
+from datamodel.models import Counter
 
 
 def anonymous_required(f):
@@ -37,6 +38,7 @@ def user_login(request):
 
         if user:
             login(request, user)
+            request.session['counter_session'] = 0
             return render(request, "mouse_cat/index.html")
         else:
             user_form.add_error('username', 'Username/password is not valid')
@@ -50,6 +52,7 @@ def user_login(request):
 @login_required
 def user_logout(request):
     context_dict = {'user': request.user.username}
+    request.session.pop('counter_session', None)
     logout(request)
     return render(request, "mouse_cat/logout.html", context_dict)
 
@@ -88,7 +91,18 @@ def signup(request):
 
 
 def counter(request):
-    return render(request, "mouse_cat/counter.html")
+    Counter.objects.inc()
+    counter_global = Counter.objects.get_current_value()
+
+    if not request.session.get('counter_session'):
+        request.session['counter_session'] = 1
+        counter_session = 1
+    else:
+        request.session['counter_session'] += 1
+        counter_session = request.session['counter_session']
+
+    context_dict={'counter_session': counter_session, 'counter_global': counter_global}
+    return render(request, "mouse_cat/counter.html", context_dict)
 
 
 def create_game(request):
