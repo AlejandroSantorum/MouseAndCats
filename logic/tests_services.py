@@ -477,68 +477,68 @@ class LogInOutCounterServiceTests(ServiceBaseTest):
             n_calls += 1
             self.is_counter_session(response, i)
             self.is_counter_global(response, n_calls)
-#
-#
-# class GameRequiredBaseServiceTests(ServiceBaseTest):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         self.user1.games_as_cat.all().delete()
-#         self.user2.games_as_cat.all().delete()
-#         super().tearDown()
-#
-#
-# class BckGamesServiceTests(GameRequiredBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#         self.bck_games = None
-#
-#     def tearDown(self):
-#         if self.bck_games:
-#             for game in self.bck_games:
-#                 game.mouse_user = None
-#                 game.save()
-#
-#         super().tearDown()
-#
-#     def clean_games(self):
-#         self.bck_games = Game.objects.filter(mouse_user__isnull=True)
-#         for game in self.bck_games:
-#             game.mouse_user = self.user1
-#             game.save()
-#
-#
-# class CreateGameServiceTests(GameRequiredBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test1(self):
-#         """ Solo puede invocarse por usuarios autenticados """
-#         self.validate_login_required(self.client1, CREATE_GAME_SERVICE)
-#
-#     def test2(self):
-#         """ Crear juego correctamente """
-#         n_games = Game.objects.count()
-#         if n_games == 0:
-#             id_max = -1
-#         else:
-#             id_max = Game.objects.order_by('-id')[0:1].get().id
-#
-#         self.loginTestUser(self.client1, self.user1)
-#         response = self.client1.get(reverse(CREATE_GAME_SERVICE), follow=True)
-#         self.assertEqual(response.status_code, 200)
-#
-#         games = Game.objects.filter(id__gt=id_max)
-#         self.assertEqual(games.count(), 1)
-#         self.assertEqual(games[0].cat_user.username, self.user1.username)
-#         self.assertIsNone(games[0].mouse_user)
-#         self.assertTrue(games[0].cat_turn)
-#
-#
+
+
+class GameRequiredBaseServiceTests(ServiceBaseTest):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        self.user1.games_as_cat.all().delete()
+        self.user2.games_as_cat.all().delete()
+        super().tearDown()
+
+
+class BckGamesServiceTests(GameRequiredBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+        self.bck_games = None
+
+    def tearDown(self):
+        if self.bck_games:
+            for game in self.bck_games:
+                game.mouse_user = None
+                game.save()
+
+        super().tearDown()
+
+    def clean_games(self):
+        self.bck_games = Game.objects.filter(mouse_user__isnull=True)
+        for game in self.bck_games:
+            game.mouse_user = self.user1
+            game.save()
+
+
+class CreateGameServiceTests(GameRequiredBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test1(self):
+        """ Solo puede invocarse por usuarios autenticados """
+        self.validate_login_required(self.client1, CREATE_GAME_SERVICE)
+
+    def test2(self):
+        """ Crear juego correctamente """
+        n_games = Game.objects.count()
+        if n_games == 0:
+            id_max = -1
+        else:
+            id_max = Game.objects.order_by('-id')[0:1].get().id
+
+        self.loginTestUser(self.client1, self.user1)
+        response = self.client1.get(reverse(CREATE_GAME_SERVICE), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        games = Game.objects.filter(id__gt=id_max)
+        self.assertEqual(games.count(), 1)
+        self.assertEqual(games[0].cat_user.username, self.user1.username)
+        self.assertIsNone(games[0].mouse_user)
+        self.assertTrue(games[0].cat_turn)
+
+
 # class JoinGameServiceTests(BckGamesServiceTests):
 #     def setUp(self):
 #         super().setUp()
