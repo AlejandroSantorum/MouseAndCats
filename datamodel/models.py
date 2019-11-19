@@ -184,7 +184,6 @@ class Move(models.Model):
             return True
         return False
 
-    # TODO: Posible automatización del movimiento al crearlo
     def save(self, *args, **kwargs):
         if self.target < 0 or self.target > 63:
             raise ValidationError(MSG_ERROR_MOVE)

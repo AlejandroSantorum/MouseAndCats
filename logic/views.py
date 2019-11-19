@@ -80,7 +80,7 @@ def signup(request):
             validate_password(cd['password'])
         except ValidationError as err:
             user_form.add_error('password', ' '.join(err.messages))
-            render(request, "mouse_cat/signup.html", {'user_form': user_form})
+            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
         try:
             user = user_form.save()
@@ -91,7 +91,7 @@ def signup(request):
         except ValueError:
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
-        return render(request, "mouse_cat/index.html")
+        # TODO: Comprobar que no se necesita este return -> # return render(request, "mouse_cat/index.html")
 
     context_dict = {'user_form': SignupForm()}
     return render(request, "mouse_cat/signup.html", context_dict)
@@ -132,16 +132,15 @@ def join_game(request):
 
 @login_required
 def select_game(request, game_id=None):
-    if request.method == 'POST' or request.method == 'GET': # OR CLAUSE SHOULDN'T BE THERE, TESTS ARE WRONG - TODO: DELETE OR CLAUSE
-        if game_id:
-            my_games = Game.objects.filter(Q(cat_user = request.user) | Q(mouse_user = request.user))
-            my_games = list(my_games.filter(status = GameStatus.ACTIVE))
-            my_games = [game.id for game in my_games]
-            if game_id in my_games:
-                request.session[constants.GAME_SELECTED_SESSION_ID] = int(game_id)
-                return redirect(reverse('show_game'))
-            else:
-                return HttpResponse('Selected game does not exist.', status=404)
+    if game_id:
+        my_games = Game.objects.filter(Q(cat_user = request.user) | Q(mouse_user = request.user))
+        my_games = list(my_games.filter(status = GameStatus.ACTIVE))
+        my_games = [game.id for game in my_games]
+        if game_id in my_games:
+            request.session[constants.GAME_SELECTED_SESSION_ID] = int(game_id)
+            return redirect(reverse('show_game'))
+        else:
+            return HttpResponse('Selected game does not exist.', status=404)
     # GET
     as_cat = list(Game.objects.filter(cat_user=request.user, status=GameStatus.ACTIVE))
     as_mouse = list(Game.objects.filter(mouse_user=request.user, status=GameStatus.ACTIVE))
