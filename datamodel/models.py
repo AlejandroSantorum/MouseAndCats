@@ -121,8 +121,8 @@ class Game(models.Model):
             return ret_str
 
         m_pos = "("+str(self.mouse)+")"
-        ret_str = "("+id+", "+status+")\tCat "+c_turn+" cat_user_test"+c_pos+\
-               " --- Mouse "+m_turn+" mouse_user_test"+m_pos
+        ret_str = "("+id+", "+status+")\tCat "+c_turn+" "+str(self.cat_user)+c_pos+\
+               " --- Mouse "+m_turn+" "+str(self.mouse_user)+m_pos
         return ret_str
 
 
