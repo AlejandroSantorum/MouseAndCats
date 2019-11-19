@@ -539,222 +539,222 @@ class CreateGameServiceTests(GameRequiredBaseServiceTests):
         self.assertTrue(games[0].cat_turn)
 
 
-# class JoinGameServiceTests(BckGamesServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test1(self):
-#         """ Solo puede invocarse por usuarios autenticados """
-#         self.validate_login_required(self.client1, JOIN_GAME_SERVICE)
-#
-#     def test2(self):
-#         """ Unirse correctamente a un juego del que no eres raton """
-#         sessions = [
-#             {"client": self.client1, "user": self.user1},
-#             {"client": self.client2, "user": self.user2}
-#         ]
-#
-#         games = []
-#         for session in sessions:
-#             self.loginTestUser(session["client"], session["user"])
-#             for _ in range(1, 4):
-#                 games.append(Game.objects.create(cat_user=session["user"]))
-#
-#         for game in games:
-#             self.assertIsNone(game.mouse_user)
-#
-#         for session in sessions:
-#             session["client"].get(reverse(JOIN_GAME_SERVICE), follow=True)
-#             id_game = max(game.id for game in list(filter(lambda g: g.cat_user != session["user"], games)))
-#             self.assertEqual(Game.objects.get(id=id_game).mouse_user, session["user"])
-#
-#     def test3(self):
-#         """ No hay juegos a los que unirse """
-#         self.clean_games()
-#
-#         self.loginTestUser(self.client2, self.user2)
-#         response = self.client2.get(reverse(JOIN_GAME_SERVICE), follow=True)
-#         self.is_join_game_error(response)
-#
-#     def test4(self):
-#         """ No hay juegos de los que no soy el gato a los que unirse """
-#         self.clean_games()
-#
-#         for _ in range(1, 4):
-#             Game.objects.create(cat_user=self.user2)
-#
-#         self.loginTestUser(self.client2, self.user2)
-#         response = self.client2.get(reverse(JOIN_GAME_SERVICE), follow=True)
-#         self.is_join_game_error(response)
-#
-#
-# class SelectGameServiceTests(GameRequiredBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test1(self):
-#         """ Solo puede invocarse por usuarios autenticados """
-#         self.validate_login_required(self.client1, SELECT_GAME_SERVICE)
-#
-#     def test2(self):
-#         """ Validación del listado de juegos que puedo seleccionar como gato y como ratón """
-#         as_cat1 = []
-#         as_cat2 = []
-#         as_cat = []
-#         as_mouse = []
-#
-#         for _ in range(1, 8):
-#             as_cat1.append(Game.objects.create(cat_user=self.user1))
-#
-#         for _ in range(1, 8):
-#             as_cat2.append(Game.objects.create(cat_user=self.user2))
-#
-#         n_actives = 0
-#         for game in filter(lambda game: game.id % 2, as_cat1):
-#             game.mouse_user = self.user2
-#             if n_actives <= 2:
-#                 game.status = GameStatus.ACTIVE
-#                 as_mouse.append(game)
-#                 n_actives += 1
-#             else:
-#                 GameStatus.FINISHED
-#             game.save()
-#
-#         n_actives = 0
-#         for game in filter(lambda game: game.id % 2 != 0, as_cat2):
-#             game.mouse_user = self.user1
-#             if n_actives <= 2:
-#                 game.status = GameStatus.ACTIVE
-#                 as_cat.append(game)
-#                 n_actives += 1
-#             else:
-#                 GameStatus.FINISHED
-#             game.save()
-#
-#         self.loginTestUser(self.client2, self.user2)
-#         response = self.client2.get(reverse(SELECT_GAME_SERVICE), follow=True)
-#         self.is_select_game(response)
-#         for game in as_cat + as_mouse:
-#             self.assertIn(str(game), self.decode(response.content))
-#
-#     def test3(self):
-#         """ No hay juegos disponibles como ratón o como gato """
-#         Game.objects.create(cat_user=self.user1)
-#         Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.FINISHED)
-#         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         Game.objects.create(cat_user=self.user2)
-#         Game.objects.create(cat_user=self.user2, mouse_user=self.user1, status=GameStatus.FINISHED)
-#
-#         self.loginTestUser(self.client1, self.user1)
-#         response = self.client1.get(reverse(SELECT_GAME_SERVICE), follow=True)
-#         self.is_select_game_nomouse(response)
-#         self.assertIn(str(game), self.decode(response.content))
-#
-#         self.loginTestUser(self.client2, self.user2)
-#         response = self.client2.get(reverse(SELECT_GAME_SERVICE), follow=True)
-#         self.is_select_game_nocat(response)
-#         self.assertIn(str(game), self.decode(response.content))
-#
-#     def test4(self):
-#         """ Selección correcta de juego como ratón y como gato """
-#         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#
-#         self.loginTestUser(self.client1, self.user1)
-#         self.assertFalse(self.client1.session.get(constants.GAME_SELECTED_SESSION_ID, False))
-#         self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
-#         self.assertEqual(Decimal(self.client1.session.get(constants.GAME_SELECTED_SESSION_ID)), game.id)
-#
-#         self.loginTestUser(self.client2, self.user2)
-#         self.assertFalse(self.client2.session.get(constants.GAME_SELECTED_SESSION_ID, False))
-#         self.client2.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
-#         self.assertEqual(Decimal(self.client2.session.get(constants.GAME_SELECTED_SESSION_ID)), game.id)
-#
-#     def test5(self):
-#         """ Selección por url de un juego que no existe """
-#         id_max = Game.objects.aggregate(Max("id"))["id__max"]
-#         if id_max is None:
-#             id_max = 0
-#         self.loginTestUser(self.client1, self.user1)
-#         response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': id_max+1}), follow=True)
-#         self.assertEqual(response.status_code, 404)
-#
-#     def test6(self):
-#         """ Selección por url de un juego que no ha comenzado """
-#         game = Game.objects.create(cat_user=self.user1)
-#         self.loginTestUser(self.client1, self.user1)
-#         response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
-#         self.assertEqual(response.status_code, 404)
-#
-#     def test7(self):
-#         """ Selección por url de un juego del que no soy juegador """
-#         try:
-#             user = User.objects.create_user(username="dummy_test2", password="dummy_test2")
-#             game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#
-#             self.loginTestUser(self.client1, user)
-#             response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
-#             self.assertEqual(response.status_code, 404)
-#         finally:
-#             if user:
-#                 user.delete()
-#
-#
-# class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#         self.sessions = [
-#             {"client": self.client1, "player": self.user1},
-#             {"client": self.client2, "player": self.user2},
-#         ]
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def set_game_in_session(self, client, user, game_id):
-#         self.loginTestUser(client, user)
-#         session = client.session
-#         session[constants.GAME_SELECTED_SESSION_ID] = game_id
-#         session.save()
-#
-#
-# class PlayServiceTests(PlayGameBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test1(self):
-#         """ Solo puede invocarse por usuarios autenticados """
-#         self.validate_login_required(self.client1, SHOW_GAME_SERVICE)
-#
-#     def test2(self):
-#         """ Validación de la actualización del juego al mover """
-#         moves = [
-#             {"player": None},
-#             {"player": self.user1, "origin": 0, "target": 9},
-#             {"player": self.user2, "origin": 59, "target": 50},
-#             {"player": self.user1, "origin": 2, "target": 11},
-#         ]
-#
-#         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         self.set_game_in_session(self.client1, self.user1, game.id)
-#
-#         for move in moves:
-#             if not move["player"] is None:
-#                 Move.objects.create(
-#                     game=game, player=move["player"], origin=move["origin"], target=move["target"])
-#
-#             response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
-#             game = Game.objects.get(id=game.id)
-#             self.is_play_game(response, game)
+class JoinGameServiceTests(BckGamesServiceTests):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test1(self):
+        """ Solo puede invocarse por usuarios autenticados """
+        self.validate_login_required(self.client1, JOIN_GAME_SERVICE)
+
+    def test2(self):
+        """ Unirse correctamente a un juego del que no eres raton """
+        sessions = [
+            {"client": self.client1, "user": self.user1},
+            {"client": self.client2, "user": self.user2}
+        ]
+
+        games = []
+        for session in sessions:
+            self.loginTestUser(session["client"], session["user"])
+            for _ in range(1, 4):
+                games.append(Game.objects.create(cat_user=session["user"]))
+
+        for game in games:
+            self.assertIsNone(game.mouse_user)
+
+        for session in sessions:
+            session["client"].get(reverse(JOIN_GAME_SERVICE), follow=True)
+            id_game = max(game.id for game in list(filter(lambda g: g.cat_user != session["user"], games)))
+            self.assertEqual(Game.objects.get(id=id_game).mouse_user, session["user"])
+
+    def test3(self):
+        """ No hay juegos a los que unirse """
+        self.clean_games()
+
+        self.loginTestUser(self.client2, self.user2)
+        response = self.client2.get(reverse(JOIN_GAME_SERVICE), follow=True)
+        self.is_join_game_error(response)
+
+    def test4(self):
+        """ No hay juegos de los que no soy el gato a los que unirse """
+        self.clean_games()
+
+        for _ in range(1, 4):
+            Game.objects.create(cat_user=self.user2)
+
+        self.loginTestUser(self.client2, self.user2)
+        response = self.client2.get(reverse(JOIN_GAME_SERVICE), follow=True)
+        self.is_join_game_error(response)
+
+
+class SelectGameServiceTests(GameRequiredBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test1(self):
+        """ Solo puede invocarse por usuarios autenticados """
+        self.validate_login_required(self.client1, SELECT_GAME_SERVICE)
+
+    def test2(self):
+        """ Validación del listado de juegos que puedo seleccionar como gato y como ratón """
+        as_cat1 = []
+        as_cat2 = []
+        as_cat = []
+        as_mouse = []
+
+        for _ in range(1, 8):
+            as_cat1.append(Game.objects.create(cat_user=self.user1))
+
+        for _ in range(1, 8):
+            as_cat2.append(Game.objects.create(cat_user=self.user2))
+
+        n_actives = 0
+        for game in filter(lambda game: game.id % 2, as_cat1):
+            game.mouse_user = self.user2
+            if n_actives <= 2:
+                game.status = GameStatus.ACTIVE
+                as_mouse.append(game)
+                n_actives += 1
+            else:
+                GameStatus.FINISHED
+            game.save()
+
+        n_actives = 0
+        for game in filter(lambda game: game.id % 2 != 0, as_cat2):
+            game.mouse_user = self.user1
+            if n_actives <= 2:
+                game.status = GameStatus.ACTIVE
+                as_cat.append(game)
+                n_actives += 1
+            else:
+                GameStatus.FINISHED
+            game.save()
+
+        self.loginTestUser(self.client2, self.user2)
+        response = self.client2.get(reverse(SELECT_GAME_SERVICE), follow=True)
+        self.is_select_game(response)
+        for game in as_cat + as_mouse:
+            self.assertIn(str(game), self.decode(response.content))
+
+    def test3(self):
+        """ No hay juegos disponibles como ratón o como gato """
+        Game.objects.create(cat_user=self.user1)
+        Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.FINISHED)
+        game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        Game.objects.create(cat_user=self.user2)
+        Game.objects.create(cat_user=self.user2, mouse_user=self.user1, status=GameStatus.FINISHED)
+
+        self.loginTestUser(self.client1, self.user1)
+        response = self.client1.get(reverse(SELECT_GAME_SERVICE), follow=True)
+        self.is_select_game_nomouse(response)
+        self.assertIn(str(game), self.decode(response.content))
+
+        self.loginTestUser(self.client2, self.user2)
+        response = self.client2.get(reverse(SELECT_GAME_SERVICE), follow=True)
+        self.is_select_game_nocat(response)
+        self.assertIn(str(game), self.decode(response.content))
+
+    def test4(self):
+        """ Selección correcta de juego como ratón y como gato """
+        game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+
+        self.loginTestUser(self.client1, self.user1)
+        self.assertFalse(self.client1.session.get(constants.GAME_SELECTED_SESSION_ID, False))
+        self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
+        self.assertEqual(Decimal(self.client1.session.get(constants.GAME_SELECTED_SESSION_ID)), game.id)
+
+        self.loginTestUser(self.client2, self.user2)
+        self.assertFalse(self.client2.session.get(constants.GAME_SELECTED_SESSION_ID, False))
+        self.client2.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
+        self.assertEqual(Decimal(self.client2.session.get(constants.GAME_SELECTED_SESSION_ID)), game.id)
+
+    def test5(self):
+        """ Selección por url de un juego que no existe """
+        id_max = Game.objects.aggregate(Max("id"))["id__max"]
+        if id_max is None:
+            id_max = 0
+        self.loginTestUser(self.client1, self.user1)
+        response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': id_max+1}), follow=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test6(self):
+        """ Selección por url de un juego que no ha comenzado """
+        game = Game.objects.create(cat_user=self.user1)
+        self.loginTestUser(self.client1, self.user1)
+        response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test7(self):
+        """ Selección por url de un juego del que no soy juegador """
+        try:
+            user = User.objects.create_user(username="dummy_test2", password="dummy_test2")
+            game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+
+            self.loginTestUser(self.client1, user)
+            response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
+            self.assertEqual(response.status_code, 404)
+        finally:
+            if user:
+                user.delete()
+
+
+class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+        self.sessions = [
+            {"client": self.client1, "player": self.user1},
+            {"client": self.client2, "player": self.user2},
+        ]
+
+    def tearDown(self):
+        super().tearDown()
+
+    def set_game_in_session(self, client, user, game_id):
+        self.loginTestUser(client, user)
+        session = client.session
+        session[constants.GAME_SELECTED_SESSION_ID] = game_id
+        session.save()
+
+
+class PlayServiceTests(PlayGameBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test1(self):
+        """ Solo puede invocarse por usuarios autenticados """
+        self.validate_login_required(self.client1, SHOW_GAME_SERVICE)
+
+    def test2(self):
+        """ Validación de la actualización del juego al mover """
+        moves = [
+            {"player": None},
+            {"player": self.user1, "origin": 0, "target": 9},
+            {"player": self.user2, "origin": 59, "target": 50},
+            {"player": self.user1, "origin": 2, "target": 11},
+        ]
+
+        game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        self.set_game_in_session(self.client1, self.user1, game.id)
+
+        for move in moves:
+            if not move["player"] is None:
+                Move.objects.create(
+                    game=game, player=move["player"], origin=move["origin"], target=move["target"])
+
+            response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
+            game = Game.objects.get(id=game.id)
+            self.is_play_game(response, game)
 #
 #
 # class MoveServiceTests(PlayGameBaseServiceTests):

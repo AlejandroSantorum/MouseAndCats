@@ -1,5 +1,5 @@
-from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden, HttpResponse
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from logic.forms import UserForm, SignupForm
 from datamodel import constants
-from datamodel.models import Counter, Game
+from datamodel.models import Counter, Game, GameStatus
+from django.db.models import Q
 
 
 def anonymous_required(f):
@@ -40,9 +41,10 @@ def user_login(request):
 
         if user:
             login(request, user)
-            request.session['counter_session'] = 0
+            request.session[constants.COUNTER_SESSION_ID] = 0
             return render(request, "mouse_cat/index.html")
         else:
+            user_form.errors['username'] = [] # TODO: Mirar por qué esto es necesario
             user_form.add_error('username', 'Username/password is not valid')
             context_dict={'user_form': user_form}
             return render(request, "mouse_cat/login.html", context_dict)
@@ -55,7 +57,8 @@ def user_login(request):
 @login_required
 def user_logout(request):
     context_dict = {'user': request.user.username}
-    request.session.pop('counter_session', None)
+    request.session.pop(constants.COUNTER_SESSION_ID, None)
+    request.session.pop(constants.GAME_SELECTED_SESSION_ID, None)
     logout(request)
     return render(request, "mouse_cat/logout.html", context_dict)
 
@@ -98,12 +101,12 @@ def counter(request):
     Counter.objects.inc()
     counter_global = Counter.objects.get_current_value()
 
-    if not request.session.get('counter_session'):
-        request.session['counter_session'] = 1
+    if not request.session.get(constants.COUNTER_SESSION_ID):
+        request.session[constants.COUNTER_SESSION_ID] = 1
         counter_session = 1
     else:
-        request.session['counter_session'] += 1
-        counter_session = request.session['counter_session']
+        request.session[constants.COUNTER_SESSION_ID] += 1
+        counter_session = request.session[constants.COUNTER_SESSION_ID]
 
     context_dict={'counter_session': counter_session, 'counter_global': counter_global}
     return render(request, "mouse_cat/counter.html", context_dict)
@@ -115,16 +118,52 @@ def create_game(request):
     return render(request, "mouse_cat/new_game.html", {'game':game})
 
 
+@login_required
 def join_game(request):
-    return render(request, "mouse_cat/join_game.html")
+    pending_games = Game.objects.filter(mouse_user=None)
+    pending_games = pending_games.exclude(cat_user=request.user).order_by('-id')
+    if len(pending_games) == 0:
+        return render(request, "mouse_cat/join_game.html", {'msg_error': 'There is no available games'})
+    game = pending_games[0]
+    game.mouse_user = request.user
+    game.save()
+    return render(request, "mouse_cat/join_game.html", {'game': game})
 
 
-def select_game(request):
-    return render(request, "mouse_cat/select_game.html")
+@login_required
+def select_game(request, game_id=None):
+    if request.method == 'POST' or request.method == 'GET': # OR CLAUSE SHOULDN'T BE THERE, TESTS ARE WRONG - TODO: DELETE OR CLAUSE
+        if game_id:
+            my_games = Game.objects.filter(Q(cat_user = request.user) | Q(mouse_user = request.user))
+            my_games = list(my_games.filter(status = GameStatus.ACTIVE))
+            my_games = [game.id for game in my_games]
+            if game_id in my_games:
+                request.session[constants.GAME_SELECTED_SESSION_ID] = int(game_id)
+            else:
+                return HttpResponse('Selected game does not exist.', status=404)
+    # GET
+    as_cat = list(Game.objects.filter(cat_user=request.user, status=GameStatus.ACTIVE))
+    as_mouse = list(Game.objects.filter(mouse_user=request.user, status=GameStatus.ACTIVE))
+    context_dict = {'as_cat': as_cat, 'as_mouse': as_mouse}
+    return render(request, "mouse_cat/select_game.html", context_dict)
 
 
+@login_required
 def show_game(request):
-    return render(request, "mouse_cat/game.html")
+    if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
+        return redirect(reverse('select_game')) #TODO: ADD EXTRA TEST FOR THIS
+
+    game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
+
+    if not game: #TODO: ADD EXTRA TEST FOR THIS
+        return redirect(reverse('select_game'))
+
+    board = [0]*constants.BOARD_SIZE
+    board[game.mouse] = -1
+    for i in game._get_cat_places():
+        board[i] = 1
+    context_dict = {'board': board, 'game': game}
+    return render(request, "mouse_cat/game.html", context_dict)
 
 
 def move(request):
