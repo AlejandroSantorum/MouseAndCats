@@ -5,9 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from logic.forms import UserForm, SignupForm
+from logic.forms import UserForm, SignupForm, MoveForm
 from datamodel import constants
-from datamodel.models import Counter, Game, GameStatus
+from datamodel.models import Counter, Game, GameStatus, Move
 from django.db.models import Q
 
 
@@ -162,9 +162,21 @@ def show_game(request):
     board[game.mouse] = -1
     for i in game._get_cat_places():
         board[i] = 1
-    context_dict = {'board': board, 'game': game}
+    context_dict = {'board': board, 'game': game, 'move_form': MoveForm()}
     return render(request, "mouse_cat/game.html", context_dict)
 
 
+@login_required
 def move(request):
-    pass
+    if request.method == 'GET':
+        return HttpResponse('Invalid method.', status=404)
+    #POST
+    if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
+        return HttpResponse('Invalid method.', status=404)
+    game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
+
+    origin = int(request.POST.get('origin'))
+    target = int(request.POST.get('target'))
+    move = Move(origin=origin, target=target, game=game, player=request.user)
+    move.save()
+    return redirect(reverse('show_game'))

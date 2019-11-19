@@ -755,97 +755,97 @@ class PlayServiceTests(PlayGameBaseServiceTests):
             response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
             game = Game.objects.get(id=game.id)
             self.is_play_game(response, game)
-#
-#
-# class MoveServiceTests(PlayGameBaseServiceTests):
-#     def setUp(self):
-#         super().setUp()
-#
-#     def tearDown(self):
-#         super().tearDown()
-#
-#     def test0(self):
-#         """ Campos de formulario válidos """
-#         self.assertTrue(forms.MoveForm({"origin": 0, "target": 0}).is_valid())
-#         self.assertFalse(forms.MoveForm({"origin": -1, "target": 0}).is_valid())
-#         self.assertFalse(forms.MoveForm({"origin": 64, "target": 0}).is_valid())
-#         self.assertFalse(forms.MoveForm({"origin": 0, "target": -1}).is_valid())
-#         self.assertFalse(forms.MoveForm({"origin": 0, "target": 64}).is_valid())
-#
-#     def test1(self):
-#         """ Solo puede invocarse por usuarios autenticados """
-#         self.validate_login_required(self.client1, MOVE_SERVICE)
-#
-#     def test2(self):
-#         """ GET no permitido """
-#         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         self.set_game_in_session(self.client1, self.user1, game.id)
-#         response = self.client.get(reverse(MOVE_SERVICE), follow=True)
-#         self.assertEqual(response.status_code, 404)
-#
-#     def test3(self):
-#         """ Secuencia de movimientos válidos """
-#         moves = [
-#             {**self.sessions[0], **{"origin": 0, "target": 9, "positions": [9, 2, 4, 6, 59]}},
-#             {**self.sessions[1], **{"origin": 59, "target": 50, "positions": [9, 2, 4, 6, 50]}},
-#             {**self.sessions[0], **{"origin": 9, "target": 16, "positions": [16, 2, 4, 6, 50]}},
-#             {**self.sessions[1], **{"origin": 50, "target": 41, "positions": [16, 2, 4, 6, 41]}},
-#         ]
-#
-#         game_t0 = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         for session in self.sessions:
-#             self.set_game_in_session(session["client"], session["player"], game_t0.id)
-#
-#         n_moves = 0
-#         for move in moves:
-#             response = move["client"].post(reverse(MOVE_SERVICE), move, follow=True)
-#             self.assertEqual(response.status_code, 200)
-#
-#             game_t1 = Game.objects.get(id=game_t0.id)
-#             n_moves += 1
-#             self.assertNotEqual(str(game_t0), str(game_t1))
-#             self.assertEqual(BaseModelTest.get_array_positions(game_t1), move["positions"])
-#             self.assertEqual(game_t1.cat_turn, move["player"] == self.user2)
-#             self.assertEqual(game_t1.moves.count(), n_moves)
-#
-#             game_t0 = game_t1
-#
-#     def test4(self):
-#         """ Llamada a mover si no existe un juego seleccionado """
-#         moves = [
-#             {**self.sessions[0], **{"origin": 0, "target": 9}},
-#             {**self.sessions[1], **{"origin": 59, "target": 50}},
-#         ]
-#
-#         game_t0 = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         for session in self.sessions:
-#             self.loginTestUser(session["client"], session["player"])
-#
-#         for move in moves:
-#             response = move["client"].post(reverse(MOVE_SERVICE), move, follow=True)
-#             self.assertEqual(response.status_code, 404)
-#             game_t1 = Game.objects.get(id=game_t0.id)
-#             self.assertEqual(str(game_t0), str(game_t1))
-#             self.assertEqual(game_t1.moves.count(), 0)
-#
-#             game_t0.cat_turn = not game_t1.cat_turn
-#             game_t0.save()
-#
-#     def test5(self):
-#         """ Cambios en la visualización en función de si se mueve o se está a la espera """
-#         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-#         for session in self.sessions:
-#             self.set_game_in_session(session["client"], session["player"], game.id)
-#
-#         response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
-#         self.is_play_game_moving(response, game)
-#         response = self.client2.get(reverse(SHOW_GAME_SERVICE), follow=True)
-#         self.is_play_game_waiting(response, game)
-#
-#         game.cat_turn = False
-#         game.save()
-#
-#         response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
-#         self.is_play_game_waiting(response, game)
-#         response = self.client2.get(reverse(SHOW_GAME_SERVICE), follow=True)
-#         self.is_play_game_moving(response, game)
+
+
+class MoveServiceTests(PlayGameBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test0(self):
+        """ Campos de formulario válidos """
+        self.assertTrue(forms.MoveForm({"origin": 0, "target": 0}).is_valid())
+        self.assertFalse(forms.MoveForm({"origin": -1, "target": 0}).is_valid())
+        self.assertFalse(forms.MoveForm({"origin": 64, "target": 0}).is_valid())
+        self.assertFalse(forms.MoveForm({"origin": 0, "target": -1}).is_valid())
+        self.assertFalse(forms.MoveForm({"origin": 0, "target": 64}).is_valid())
+
+    def test1(self):
+        """ Solo puede invocarse por usuarios autenticados """
+        self.validate_login_required(self.client1, MOVE_SERVICE)
+
+    def test2(self):
+        """ GET no permitido """
+        game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        self.set_game_in_session(self.client1, self.user1, game.id)
+        response = self.client.get(reverse(MOVE_SERVICE), follow=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test3(self):
+        """ Secuencia de movimientos válidos """
+        moves = [
+            {**self.sessions[0], **{"origin": 0, "target": 9, "positions": [9, 2, 4, 6, 59]}},
+            {**self.sessions[1], **{"origin": 59, "target": 50, "positions": [9, 2, 4, 6, 50]}},
+            {**self.sessions[0], **{"origin": 9, "target": 16, "positions": [16, 2, 4, 6, 50]}},
+            {**self.sessions[1], **{"origin": 50, "target": 41, "positions": [16, 2, 4, 6, 41]}},
+        ]
+
+        game_t0 = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        for session in self.sessions:
+            self.set_game_in_session(session["client"], session["player"], game_t0.id)
+
+        n_moves = 0
+        for move in moves:
+            response = move["client"].post(reverse(MOVE_SERVICE), move, follow=True)
+            self.assertEqual(response.status_code, 200)
+
+            game_t1 = Game.objects.get(id=game_t0.id)
+            n_moves += 1
+            self.assertNotEqual(str(game_t0), str(game_t1))
+            self.assertEqual(BaseModelTest.get_array_positions(game_t1), move["positions"])
+            self.assertEqual(game_t1.cat_turn, move["player"] == self.user2)
+            self.assertEqual(game_t1.moves.count(), n_moves)
+
+            game_t0 = game_t1
+
+    def test4(self):
+        """ Llamada a mover si no existe un juego seleccionado """
+        moves = [
+            {**self.sessions[0], **{"origin": 0, "target": 9}},
+            {**self.sessions[1], **{"origin": 59, "target": 50}},
+        ]
+
+        game_t0 = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        for session in self.sessions:
+            self.loginTestUser(session["client"], session["player"])
+
+        for move in moves:
+            response = move["client"].post(reverse(MOVE_SERVICE), move, follow=True)
+            self.assertEqual(response.status_code, 404)
+            game_t1 = Game.objects.get(id=game_t0.id)
+            self.assertEqual(str(game_t0), str(game_t1))
+            self.assertEqual(game_t1.moves.count(), 0)
+
+            game_t0.cat_turn = not game_t1.cat_turn
+            game_t0.save()
+
+    def test5(self):
+        """ Cambios en la visualización en función de si se mueve o se está a la espera """
+        game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
+        for session in self.sessions:
+            self.set_game_in_session(session["client"], session["player"], game.id)
+
+        response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
+        self.is_play_game_moving(response, game)
+        response = self.client2.get(reverse(SHOW_GAME_SERVICE), follow=True)
+        self.is_play_game_waiting(response, game)
+
+        game.cat_turn = False
+        game.save()
+
+        response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
+        self.is_play_game_waiting(response, game)
+        response = self.client2.get(reverse(SHOW_GAME_SERVICE), follow=True)
+        self.is_play_game_moving(response, game)
