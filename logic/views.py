@@ -87,7 +87,7 @@ def signup(request):
             user.set_password(user.password)
             user.save()
             login(request, user)
-            return render(request, "mouse_cat/index.html")
+            return render(request, "mouse_cat/signup.html")
         except ValueError:
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
@@ -123,7 +123,7 @@ def join_game(request):
     pending_games = Game.objects.filter(mouse_user=None)
     pending_games = pending_games.exclude(cat_user=request.user).order_by('-id')
     if len(pending_games) == 0:
-        return render(request, "mouse_cat/join_game.html", {'msg_error': 'There is no available games'})
+        return render(request, "mouse_cat/join_game.html", {constants.ERROR_MESSAGE_ID: 'There is no available games'})
     game = pending_games[0]
     game.mouse_user = request.user
     game.save()
@@ -139,6 +139,7 @@ def select_game(request, game_id=None):
             my_games = [game.id for game in my_games]
             if game_id in my_games:
                 request.session[constants.GAME_SELECTED_SESSION_ID] = int(game_id)
+                return redirect(reverse('show_game'))
             else:
                 return HttpResponse('Selected game does not exist.', status=404)
     # GET
