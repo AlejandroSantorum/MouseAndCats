@@ -12,6 +12,23 @@ from django.db.models import Q
 
 
 def anonymous_required(f):
+    """
+    anonymous_required
+    ----------
+    Input parameters:
+        f: decorated function
+    ----------
+    Returns:
+        function wrapped
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        Decorator definition. It  implements a filterthat redirects to a error
+        page in case the function that it 'decorates' is invoked by an
+        authenticated user.
+    """
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
@@ -22,17 +39,69 @@ def anonymous_required(f):
 
 
 def errorHTTP(request, exception=None):
+    """
+    errorHTTP
+    ----------
+    Input parameters:
+        request: received request
+        exception: error message ID. None by default.
+    ----------
+    Returns:
+        It renders "mouse_cat/error.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        It renders "mouse_cat/error.html" template with the error message.
+    """
     context_dict = {}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
     return render(request, "mouse_cat/error.html", context_dict)
 
 
 def index(request):
+    """
+    index
+    ----------
+    Input parameters:
+        request: received request
+    ----------
+    Returns:
+        It renders "mouse_cat/index.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        It renders "mouse_cat/index.html" template.
+    """
     return render(request, "mouse_cat/index.html")
 
 
 @anonymous_required
 def user_login(request):
+    """
+    user_login
+    ----------
+    Input parameters:
+        request: received request. In its body receives two strings, username
+            and the user password
+    ----------
+    Returns:
+        It renders "mouse_cat/index.html" template or "mouse_cat/login.html"
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            Case method 'POST': It renders "mouse_cat/index.html" template in case
+        the user is logged successfully. Otherwise it renders
+        "mouse_cat/login.html" again.
+            Case method 'GET': It renders "mouse_cat/login.html" with the user
+        form data.
+            It both cases the user is required to be anonymous, i.e, not logged.
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -56,6 +125,24 @@ def user_login(request):
 
 @login_required
 def user_logout(request):
+    """
+    user_logout
+    ----------
+    Input parameters:
+        request: received request. In its body receives nothing
+    ----------
+    Returns:
+        It renders "mouse_cat/logout.html"
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            It deletes counter session ID and game selected ID from session info;
+        then the user is logged out. Finally, it's rendered the
+        "mouse_cat/logout.html" template.
+            It both cases the user is required to be logged.
+    """
     context_dict = {'user': request.user.username}
     request.session.pop(constants.COUNTER_SESSION_ID, None)
     request.session.pop(constants.GAME_SELECTED_SESSION_ID, None)
@@ -65,6 +152,26 @@ def user_logout(request):
 
 @anonymous_required
 def signup(request):
+    """
+    signup
+    ----------
+    Input parameters:
+        request: received request. In its body receives two strings, username
+            and the user password
+    ----------
+    Returns:
+        It renders "mouse_cat/signup.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            Case method 'POST': If the fields validation is good, it creates a
+        new user and it is autheticated in the application.
+            Case method 'GET': It renders "mouse_cat/signup.html" in order to
+        ahow signup form.
+            It both cases the user is required to be anonymous, i.e, not logged.
+    """
     if request.method == 'POST':
         user_form = SignupForm(data=request.POST)
         if user_form.is_valid():
@@ -98,6 +205,21 @@ def signup(request):
 
 
 def counter(request):
+    """
+    counter
+    ----------
+    Input parameters:
+        request: received request. In its body receives nothing.
+    ----------
+    Returns:
+        It renders "mouse_cat/counter.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            It updates and shows several counters of the received requests
+    """
     Counter.objects.inc()
     counter_global = Counter.objects.get_current_value()
 
@@ -114,12 +236,45 @@ def counter(request):
 
 @login_required
 def create_game(request):
+    """
+    create_game
+    ----------
+    Input parameters:
+        request: received request. It contains logged user information.
+    ----------
+    Returns:
+        It renders "mouse_cat/new_game.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        It creates a game. Caller user (player 1) is the game owner and it
+        waits for player 2 to join.
+        It both cases the user is required to be logged.
+    """
     game = Game.objects.create(cat_user=request.user)
     return render(request, "mouse_cat/new_game.html", {'game':game})
 
 
 @login_required
 def join_game(request):
+    """
+    join_game
+    ----------
+    Input parameters:
+        request: received request. It contains logged user information.
+    ----------
+    Returns:
+        It renders "mouse_cat/join_game.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        The selected game is activated and it's the player 1 turn.
+        It both cases the user is required to be logged.
+    """
     pending_games = Game.objects.filter(mouse_user=None)
     pending_games = pending_games.exclude(cat_user=request.user).order_by('-id')
     if len(pending_games) == 0:
@@ -132,6 +287,24 @@ def join_game(request):
 
 @login_required
 def select_game(request, game_id=None):
+    """
+    select_game
+    ----------
+    Input parameters:
+        method 'GET': received request. It contains logged user information.
+        method 'POST': received request and the game ID to be played.
+    ----------
+    Returns:
+        It renders "mouse_cat/select_game.html" template
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            Once one game is selected (from the list of available games). its ID is
+        stored into a variable called 'game_selected'
+            It both cases the user is required to be logged.
+    """
     if game_id:
         my_games = Game.objects.filter(Q(cat_user = request.user) | Q(mouse_user = request.user))
         my_games = list(my_games.filter(status = GameStatus.ACTIVE))

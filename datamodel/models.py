@@ -215,19 +215,20 @@ class Move(models.Model):
     # def __str__() TODO: Hacer para tests opcionales
 
 class CounterManager(models.Manager):
+    def init_counter(self):
+        counter = Counter()
+        super(Counter, counter).save()
+        return counter
+
     def inc(self):
-        objs = super().get_queryset()
+        objs = self.get_queryset()
         if len(objs) == 0:
-            from django.db import connection
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO datamodel_counter (value)
-                    VALUES (1) """)
-            return 1
+            counter = self.init_counter()
+        else:
+            counter = objs[0]
         val = self.get_current_value()
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE datamodel_counter SET value="+str(val+1))
+        counter.value = val+1
+        super(Counter, counter).save()
         return val+1
 
     def get_current_value(self):
