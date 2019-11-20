@@ -105,21 +105,23 @@ def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        next = request.POST.get('return_service')
         user_form = UserForm(data=request.POST)
         user = authenticate(username=username, password=password)
-
         if user:
             login(request, user)
             request.session[constants.COUNTER_SESSION_ID] = 0
+            if next != 'None':
+                return redirect(next)
             return render(request, "mouse_cat/index.html")
         else:
             user_form.errors['username'] = [] # TODO: Mirar por qué esto es necesario
             user_form.add_error('username', 'Username/password is not valid')
-            context_dict={'user_form': user_form}
+            context_dict={'user_form': user_form, 'return_service': next}
             return render(request, "mouse_cat/login.html", context_dict)
 
     user_form = UserForm()
-    context_dict={'user_form': user_form}
+    context_dict={'user_form': user_form, 'return_service': request.GET.get('next')}
     return render(request, "mouse_cat/login.html", context_dict)
 
 
