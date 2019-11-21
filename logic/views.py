@@ -125,7 +125,6 @@ def user_login(request):
     return render(request, "mouse_cat/login.html", context_dict)
 
 
-@login_required
 def user_logout(request):
     """
     user_logout
@@ -145,6 +144,9 @@ def user_logout(request):
         "mouse_cat/logout.html" template.
             It both cases the user is required to be logged.
     """
+    if not request.user.is_authenticated:
+        return redirect(reverse('index'))
+
     context_dict = {'user': request.user.username}
     request.session.pop(constants.COUNTER_SESSION_ID, None)
     request.session.pop(constants.GAME_SELECTED_SESSION_ID, None)
