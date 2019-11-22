@@ -111,7 +111,8 @@ def user_login(request):
         if user:
             login(request, user)
             request.session[constants.COUNTER_SESSION_ID] = 0
-            if next != 'None':
+            if next != 'None' and next != None:
+                print('FUCK THIS', next)
                 return redirect(next)
             return render(request, "mouse_cat/index.html")
         else:
@@ -190,7 +191,8 @@ def signup(request):
         try:
             validate_password(cd['password'])
         except ValidationError as err:
-            user_form.add_error('password', ' '.join(err.messages))
+            user_form.errors['password'] = err.messages
+            # user_form.add_error('password', ' '.join(err.messages))
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
         try:
