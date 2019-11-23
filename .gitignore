@@ -128,3 +128,8 @@ dmypy.json
 *.pyc
 staticfiles
 uploads
+
+
+
+dbscript.sh
+assign3_first_*
