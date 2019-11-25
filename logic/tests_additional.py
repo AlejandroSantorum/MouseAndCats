@@ -1,5 +1,4 @@
 """
-@author: rlatorre
 """
 
 from django.core.exceptions import ValidationError
