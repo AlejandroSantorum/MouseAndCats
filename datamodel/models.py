@@ -212,7 +212,10 @@ class Move(models.Model):
                 self.game.cat4 = self.target
             self.game.cat_turn = False
         self.game.save()
-    # def __str__() TODO: Hacer para tests opcionales
+
+    def __str__(self):
+        return '['+str(self.player)+'] - Origen: '+str(self.origin)\
+                +' - Destino: '+str(self.target)
 
 class CounterManager(models.Manager):
     def init_counter(self):

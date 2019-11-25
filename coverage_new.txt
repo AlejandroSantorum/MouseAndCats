@@ -1,0 +1,23 @@
+Name                                              Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------
+datamodel/__init__.py                                 0      0   100%
+datamodel/admin.py                                    5      0   100%
+datamodel/apps.py                                     3      3     0%   1-5
+datamodel/constants.py                                4      0   100%
+datamodel/migrations/0001_initial.py                  9      0   100%
+datamodel/migrations/0002_auto_20191106_1840.py       5      0   100%
+datamodel/migrations/0003_counter_count.py            4      0   100%
+datamodel/migrations/0004_auto_20191116_2145.py       4      0   100%
+datamodel/migrations/__init__.py                      0      0   100%
+datamodel/models.py                                 176      0   100%
+datamodel/views.py                                    1      1     0%   1
+logic/__init__.py                                     0      0   100%
+logic/admin.py                                        1      1     0%   1
+logic/apps.py                                         3      3     0%   1-5
+logic/forms.py                                       21      0   100%
+logic/migrations/__init__.py                          0      0   100%
+logic/models.py                                       1      1     0%   1
+logic/urls.py                                         3      0   100%
+logic/views.py                                      132      0   100%
+-------------------------------------------------------------------------------
+TOTAL                                               372      9    98%

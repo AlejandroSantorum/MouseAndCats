@@ -112,7 +112,6 @@ def user_login(request):
             login(request, user)
             request.session[constants.COUNTER_SESSION_ID] = 0
             if next != 'None' and next != None:
-                print('FUCK THIS', next)
                 return redirect(next)
             return render(request, "mouse_cat/index.html")
         else:
@@ -184,6 +183,7 @@ def signup(request):
         else:
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
+
         if cd['password'] != cd['password2']:
             user_form.add_error('password2', 'Password and Repeat password are not the same')
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
@@ -195,16 +195,14 @@ def signup(request):
             # user_form.add_error('password', ' '.join(err.messages))
             return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
-        try:
-            user = user_form.save()
-            user.set_password(user.password)
-            user.save()
-            login(request, user)
-            return render(request, "mouse_cat/signup.html")
-        except ValueError:
-            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
-
-        # TODO: Comprobar que no se necesita este return -> # return render(request, "mouse_cat/index.html")
+        # try:
+        user = user_form.save()
+        user.set_password(user.password)
+        user.save()
+        login(request, user)
+        return render(request, "mouse_cat/signup.html")
+        # except ValueError:
+        #     return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
     context_dict = {'user_form': SignupForm()}
     return render(request, "mouse_cat/signup.html", context_dict)
@@ -332,9 +330,9 @@ def show_game(request):
     if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
         return redirect(reverse('select_game')) #TODO: ADD EXTRA TEST FOR THIS
 
-    game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
-
-    if not game: #TODO: ADD EXTRA TEST FOR THIS
+    try:
+        game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
+    except Game.DoesNotExist:
         return redirect(reverse('select_game'))
 
     board = [0]*constants.BOARD_SIZE
