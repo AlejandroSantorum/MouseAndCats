@@ -299,7 +299,7 @@ def select_game(request, game_id=None):
         method 'POST': received request and the game ID to be played.
     ----------
     Returns:
-        It renders "mouse_cat/select_game.html" template
+        It renders "mouse_cat/select_game.html" template "mouse_cat/show_game.html"
     ----------
     Raises:
         None
@@ -327,6 +327,26 @@ def select_game(request, game_id=None):
 
 @login_required
 def show_game(request):
+    """
+    show_game
+    ----------
+    Input parameters:
+        request: received request. It also contains player and
+            selected game information.
+    ----------
+    Returns:
+            It renders "mouse_cat/game.html" template or
+        "mouse_cat/select_game.html" template if there is no selected game
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+            It shows the selected game data, including the game board,
+        represented as an integer array [0,63]. Cats are represented with
+        value 1 and mouse with value -1.
+            User is required to be logged.
+    """
     if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
         return redirect(reverse('select_game')) #TODO: ADD EXTRA TEST FOR THIS
 
@@ -345,6 +365,26 @@ def show_game(request):
 
 @login_required
 def move(request):
+    """
+    move
+    ----------
+    Input parameters:
+        request: received request. It also contains player, selected game
+            information and origin and target of the movement. Player and
+            game information are included in session variable. Origin and
+            target can be found at the POST body parameters.
+    ----------
+    Returns:
+        It renders "mouse_cat/show_game.html" template; or Error 404 if an
+        invalid method is used.
+    ----------
+    Raises:
+        None
+    ----------
+    Description:
+        It develops a movement of a given player in the selected game.
+        User is required to be logged.
+    """
     if request.method == 'GET':
         return HttpResponse('Invalid method.', status=404)
     #POST
