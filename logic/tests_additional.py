@@ -37,6 +37,7 @@ class AdditionalMoveTest(tests.BaseModelTest):
             cat_user=self.users[0], mouse_user=self.users[1], status=GameStatus.ACTIVE)
 
     def test1(self):
+        ''' main author: Rafael Sanchez '''
         """ Movimiento de un ratón desde posiciones en la que no está """
         moves = [
             {"origin": 61, "target": 52},
@@ -51,6 +52,7 @@ class AdditionalMoveTest(tests.BaseModelTest):
             self.assertEqual(self.game.moves.count(), 1)
 
     def test2(self):
+        ''' main author: Alejandro Santorum '''
         """ Conversiones a string """
         move = Move(game=self.game, player=self.game.cat_user, origin=0, target=9)
         self.assertEqual(str(move), "[cat_user_test] - Origen: 0 - Destino: 9")
@@ -63,12 +65,14 @@ class AdditionalShowGameServiceTest(PlayGameBaseServiceTests):
         super().tearDown()
 
     def test1(self):
+        ''' main author: Rafael Sanchez '''
         """ Vuelve al selector de juego si no hay un ID seleccionado """
         self.set_game_in_session(self.client1, self.user1, None)
         response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
         self.is_select_game(response)
 
     def test2(self):
+        ''' main author: Alejandro Santorum '''
         """ Vuelve al selector de juego si no hay para el ID seleccionado """
         self.set_game_in_session(self.client1, self.user1, 420)
         response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
@@ -83,6 +87,7 @@ class AdditionalSignupServiceTest(ServiceBaseTest):
         super().tearDown()
 
     def test1(self):
+        ''' main author: Rafael Sanchez '''
         """ Carga del formulario de signup """
         self.assertFalse(self.client1.session.get(USER_SESSION_ID, False))
         response = self.client1.get(reverse(SIGNUP_SERVICE), follow=True)
@@ -98,6 +103,7 @@ class AdditionalLogInOutServiceTests(ServiceBaseTest):
         super().tearDown()
 
     def test1(self):
+        ''' main author: Alejandro Santorum '''
         """ Redirect al indice tras login """
         response = self.client1.get(reverse(SELECT_GAME_SERVICE), follow=True)
         self.is_login(response)
@@ -107,6 +113,7 @@ class AdditionalLogInOutServiceTests(ServiceBaseTest):
 
 
     def test2(self):
+        ''' main author: Rafael Sanchez '''
         """ Redirect a select game tras login """
         response = self.client1.get(reverse(SELECT_GAME_SERVICE), follow=True)
         self.is_login(response)
@@ -118,6 +125,7 @@ class AdditionalLogInOutServiceTests(ServiceBaseTest):
         pass
 
     def test3(self):
+        ''' main author: Alejandro Santorum '''
         """ Logout no hace nada con un usuario no registrado """
         self.assertFalse(self.client1.session.get(USER_SESSION_ID, False))
         response = self.client1.get(reverse(LOGOUT_SERVICE), follow=True)
@@ -131,6 +139,7 @@ class AdditionalMoveServiceTests(PlayGameBaseServiceTests):
         super().tearDown()
 
     def test1(self):
+        ''' main author: Rafael Sanchez '''
         """ Movimiento inválido """
         moves = [
             {**self.sessions[0], **{"origin": 0, "target": 10}},
