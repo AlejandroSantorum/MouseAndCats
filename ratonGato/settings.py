@@ -92,7 +92,8 @@ if os.getenv('SQLITE', False):
     }
 else:
     import dj_database_url
-    DATABASES['default'] = dj_database_url.config(default='postgres://alumnodb:alumnodb@localhost:5432/ratongato')
+    def_url = 'postgres://alumnodb:alumnodb@localhost:5432/ratongato'
+    DATABASES['default'] = dj_database_url.config(default=def_url)
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticHeroku')
@@ -102,19 +103,23 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticHeroku')
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.' +
+                'UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.' +
+                'MinimumLengthValidator',
         'OPTIONS': {
             'min_length': 6,
         }
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.' +
+                'CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.' +
+                'NumericPasswordValidator',
     },
 ]
 

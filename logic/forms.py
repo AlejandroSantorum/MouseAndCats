@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from datamodel.models import Move, Game
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+
 class UserForm(forms.ModelForm):
     """
     UserForm  (main author: Alejandro Santorum)
@@ -26,7 +27,8 @@ class SignupForm(forms.ModelForm):
         password (twice to avoid missclicks)
     """
     password = forms.CharField(widget=forms.PasswordInput())
-    password2 = forms.CharField(label='Repeat password', widget=forms.PasswordInput())
+    password2 = forms.CharField(label='Repeat password',
+                                widget=forms.PasswordInput())
 
     class Meta:
         model = User

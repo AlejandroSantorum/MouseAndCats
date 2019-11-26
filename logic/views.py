@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from logic.forms import UserForm, SignupForm, MoveForm
 from datamodel import constants
@@ -32,7 +31,8 @@ def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
-                errorHTTP(request, exception="Action restricted to anonymous users"))
+                errorHTTP(request,
+                          exception="Action restricted to anonymous users"))
         else:
             return f(request)
     return wrapped
@@ -95,12 +95,12 @@ def user_login(request):
         None
     ----------
     Description:
-            Case method 'POST': It renders "mouse_cat/index.html" template in case
-        the user is logged successfully. Otherwise it renders
+            Case method 'POST': It renders "mouse_cat/index.html" template in
+            case the user is logged successfully. Otherwise it renders
         "mouse_cat/login.html" again.
             Case method 'GET': It renders "mouse_cat/login.html" with the user
         form data.
-            It both cases the user is required to be anonymous, i.e, not logged.
+            It both cases the user is required to be anonymous, i.e, not logged
     """
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -111,17 +111,18 @@ def user_login(request):
         if user:
             login(request, user)
             request.session[constants.COUNTER_SESSION_ID] = 0
-            if next != 'None' and next != None:
+            if next != 'None' and next is not None:
                 return redirect(next)
             return render(request, "mouse_cat/index.html")
         else:
             user_form.errors['username'] = []
             user_form.add_error('username', 'Username/password is not valid')
-            context_dict={'user_form': user_form, 'return_service': next}
+            context_dict = {'user_form': user_form, 'return_service': next}
             return render(request, "mouse_cat/login.html", context_dict)
 
     user_form = UserForm()
-    context_dict={'user_form': user_form, 'return_service': request.GET.get('next')}
+    context_dict = {'user_form': user_form,
+                    'return_service': request.GET.get('next')}
     return render(request, "mouse_cat/login.html", context_dict)
 
 
@@ -139,8 +140,8 @@ def user_logout(request):
         None
     ----------
     Description:
-            It deletes counter session ID and game selected ID from session info;
-        then the user is logged out. Finally, it's rendered the
+            It deletes counter session ID and game selected ID from session
+        info; then the user is logged out. Finally, it's rendered the
         "mouse_cat/logout.html" template.
             It both cases the user is required to be logged.
     """
@@ -174,26 +175,37 @@ def signup(request):
         new user and it is autheticated in the application.
             Case method 'GET': It renders "mouse_cat/signup.html" in order to
         ahow signup form.
-            It both cases the user is required to be anonymous, i.e, not logged.
+            It both cases the user is required to be anonymous, i.e, not logged
     """
     if request.method == 'POST':
         user_form = SignupForm(data=request.POST)
         if user_form.is_valid():
             cd = user_form.cleaned_data
         else:
-            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
-
+            return render(request, "mouse_cat/signup.html",
+                          {'user_form': user_form})
 
         if cd['password'] != cd['password2']:
-            user_form.add_error('password2', 'Password and Repeat password are not the same')
-            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
+            user_form.add_error(
+                                'password2',
+                                'Password and Repeat password are not the same'
+                               )
+            return render(
+                          request,
+                          "mouse_cat/signup.html",
+                          {'user_form': user_form}
+                         )
 
         try:
             validate_password(cd['password'])
         except ValidationError as err:
             user_form.errors['password'] = err.messages
             # user_form.add_error('password', ' '.join(err.messages))
-            return render(request, "mouse_cat/signup.html", {'user_form': user_form})
+            return render(
+                          request,
+                          "mouse_cat/signup.html",
+                          {'user_form': user_form}
+                         )
 
         # try:
         user = user_form.save()
@@ -201,8 +213,6 @@ def signup(request):
         user.save()
         login(request, user)
         return render(request, "mouse_cat/signup.html")
-        # except ValueError:
-        #     return render(request, "mouse_cat/signup.html", {'user_form': user_form})
 
     context_dict = {'user_form': SignupForm()}
     return render(request, "mouse_cat/signup.html", context_dict)
@@ -234,7 +244,8 @@ def counter(request):
         request.session[constants.COUNTER_SESSION_ID] += 1
         counter_session = request.session[constants.COUNTER_SESSION_ID]
 
-    context_dict={'counter_session': counter_session, 'counter_global': counter_global}
+    context_dict = {'counter_session': counter_session,
+                    'counter_global': counter_global}
     return render(request, "mouse_cat/counter.html", context_dict)
 
 
@@ -258,7 +269,7 @@ def create_game(request):
         It both cases the user is required to be logged.
     """
     game = Game.objects.create(cat_user=request.user)
-    return render(request, "mouse_cat/new_game.html", {'game':game})
+    return render(request, "mouse_cat/new_game.html", {'game': game})
 
 
 @login_required
@@ -280,9 +291,12 @@ def join_game(request):
         It both cases the user is required to be logged.
     """
     pending_games = Game.objects.filter(mouse_user=None)
-    pending_games = pending_games.exclude(cat_user=request.user).order_by('-id')
+    pending_games = pending_games.exclude(cat_user=request.user)
+    pending_games = pending_games.order_by('-id')
     if len(pending_games) == 0:
-        return render(request, "mouse_cat/join_game.html", {constants.ERROR_MESSAGE_ID: 'There is no available games'})
+        context_dict = {constants.ERROR_MESSAGE_ID:
+                        'There is no available games'}
+        return render(request, "mouse_cat/join_game.html", context_dict)
     game = pending_games[0]
     game.mouse_user = request.user
     game.save()
@@ -299,19 +313,21 @@ def select_game(request, game_id=None):
         method 'POST': received request and the game ID to be played.
     ----------
     Returns:
-        It renders "mouse_cat/select_game.html" template "mouse_cat/show_game.html"
+        It renders "mouse_cat/select_game.html" template
+        "mouse_cat/show_game.html"
     ----------
     Raises:
         None
     ----------
     Description:
-            Once one game is selected (from the list of available games). its ID is
-        stored into a variable called 'game_selected'
+            Once one game is selected (from the list of available games). its
+        ID is stored into a variable called 'game_selected'
             It both cases the user is required to be logged.
     """
     if game_id:
-        my_games = Game.objects.filter(Q(cat_user = request.user) | Q(mouse_user = request.user))
-        my_games = list(my_games.filter(status = GameStatus.ACTIVE))
+        my_games = Game.objects.filter(Q(cat_user=request.user) |
+                                       Q(mouse_user=request.user))
+        my_games = list(my_games.filter(status=GameStatus.ACTIVE))
         my_games = [game.id for game in my_games]
         if game_id in my_games:
             request.session[constants.GAME_SELECTED_SESSION_ID] = int(game_id)
@@ -319,8 +335,10 @@ def select_game(request, game_id=None):
         else:
             return HttpResponse('Selected game does not exist.', status=404)
     # GET
-    as_cat = list(Game.objects.filter(cat_user=request.user, status=GameStatus.ACTIVE))
-    as_mouse = list(Game.objects.filter(mouse_user=request.user, status=GameStatus.ACTIVE))
+    as_cat = list(Game.objects.filter(cat_user=request.user,
+                                      status=GameStatus.ACTIVE))
+    as_mouse = list(Game.objects.filter(mouse_user=request.user,
+                                        status=GameStatus.ACTIVE))
     context_dict = {'as_cat': as_cat, 'as_mouse': as_mouse}
     return render(request, "mouse_cat/select_game.html", context_dict)
 
@@ -351,7 +369,8 @@ def show_game(request):
         return redirect(reverse('select_game'))
 
     try:
-        game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
+        game_id = request.session.get(constants.GAME_SELECTED_SESSION_ID)
+        game = Game.objects.get(id=game_id)
     except Game.DoesNotExist:
         return redirect(reverse('select_game'))
 
@@ -387,10 +406,11 @@ def move(request):
     """
     if request.method == 'GET':
         return HttpResponse('Invalid method.', status=404)
-    #POST
+    # POST
     if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
         return HttpResponse('Invalid method.', status=404)
-    game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
+    game_id = request.session.get(constants.GAME_SELECTED_SESSION_ID)
+    game = Game.objects.get(id=game_id)
 
     origin = int(request.POST.get('origin'))
     target = int(request.POST.get('target'))
