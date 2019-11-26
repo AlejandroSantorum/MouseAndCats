@@ -12,12 +12,18 @@ MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
 MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
 
 class GameStatus():
+    '''
+    (main author: Rafael Sanchez)
+    '''
     CREATED = 0
     ACTIVE = 1
     FINISHED = 2
 
 
 class Game(models.Model):
+    '''
+    (main author: Rafael Sanchez)
+    '''
     MIN_CELL = 0
     MAX_CELL = 63
     WIDTH = 8
@@ -127,6 +133,9 @@ class Game(models.Model):
 
 
 class Move(models.Model):
+    '''
+    (main author: Alejandro Santorum)
+    '''
     origin = models.IntegerField(validators=[
                                             MaxValueValidator(Game.MAX_CELL),
                                             MinValueValidator(Game.MIN_CELL)
@@ -218,6 +227,9 @@ class Move(models.Model):
                 +' - Destino: '+str(self.target)
 
 class CounterManager(models.Manager):
+    '''
+    (authors: Rafael Sanchez & Alejandro Santorum)
+    '''
     def init_counter(self):
         counter = Counter()
         super(Counter, counter).save()
@@ -242,6 +254,9 @@ class CounterManager(models.Manager):
 
 
 class Counter(models.Model):
+    '''
+    (authors: Rafael Sanchez & Alejandro Santorum)
+    '''
     value = models.IntegerField(default=0)
     objects = CounterManager()
     def save(self, *args, **kwargs):

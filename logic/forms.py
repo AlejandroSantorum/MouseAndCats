@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 class UserForm(forms.ModelForm):
     """
-    UserForm
+    UserForm  (main author: Alejandro Santorum)
     ----------
     Description:
         It defines the log in form, in order to get username and password
@@ -19,7 +19,7 @@ class UserForm(forms.ModelForm):
 
 class SignupForm(forms.ModelForm):
     """
-    SignupForm
+    SignupForm (main author: Rafael Sanchez)
     ----------
     Description:
         It defines the sign up form, in order to get username and
@@ -35,7 +35,7 @@ class SignupForm(forms.ModelForm):
 
 class MoveForm(forms.ModelForm):
     """
-    MoveForm
+    MoveForm (main author: Alejandro Santorum)
     ----------
     Description:
         It defines the movement form, in order to get the orgin and the target
