@@ -13,7 +13,7 @@ MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
 
 class GameStatus():
     '''
-    (main author: Rafael Sanchez)
+    (main author: Alejandro Santorum)
     '''
     CREATED = 0
     ACTIVE = 1
@@ -228,7 +228,7 @@ class Move(models.Model):
 
 class CounterManager(models.Manager):
     '''
-    (authors: Rafael Sanchez & Alejandro Santorum)
+    (author: Rafael Sanchez)
     '''
     def init_counter(self):
         counter = Counter()
@@ -255,7 +255,7 @@ class CounterManager(models.Manager):
 
 class Counter(models.Model):
     '''
-    (authors: Rafael Sanchez & Alejandro Santorum)
+    (author: Rafael Sanchez)
     '''
     value = models.IntegerField(default=0)
     objects = CounterManager()
