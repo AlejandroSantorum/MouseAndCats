@@ -9,7 +9,7 @@ datamodel/migrations/0002_auto_20191106_1840.py       5      0   100%
 datamodel/migrations/0003_counter_count.py            4      0   100%
 datamodel/migrations/0004_auto_20191116_2145.py       4      0   100%
 datamodel/migrations/__init__.py                      0      0   100%
-datamodel/models.py                                 176      0   100%
+datamodel/models.py                                 176      2    99%   170, 217
 datamodel/views.py                                    1      1     0%   1
 logic/__init__.py                                     0      0   100%
 logic/admin.py                                        1      1     0%   1
@@ -18,6 +18,6 @@ logic/forms.py                                       21      0   100%
 logic/migrations/__init__.py                          0      0   100%
 logic/models.py                                       1      1     0%   1
 logic/urls.py                                         3      0   100%
-logic/views.py                                      132      0   100%
+logic/views.py                                      142     15    89%   115, 148, 207-208, 351, 355-356, 401-408
 -------------------------------------------------------------------------------
-TOTAL                                               372      9    98%
+TOTAL                                               382     26    93%

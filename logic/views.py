@@ -394,6 +394,16 @@ def move(request):
 
     origin = int(request.POST.get('origin'))
     target = int(request.POST.get('target'))
+    move_form = MoveForm(data=request.POST)
     move = Move(origin=origin, target=target, game=game, player=request.user)
-    move.save()
+    try:
+        move.save()
+    except ValidationError as err:
+        move_form.add_error('origin', err.messages[0])
+        board = [0]*constants.BOARD_SIZE
+        board[game.mouse] = -1
+        for i in game._get_cat_places():
+            board[i] = 1
+        context_dict = {'board': board, 'game': game, 'move_form': move_form}
+        return render(request, "mouse_cat/game.html", context_dict)
     return redirect(reverse('show_game'))
