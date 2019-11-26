@@ -128,7 +128,7 @@ class Game(models.Model):
                 str(self.cat3) + ", " + str(self.cat4) + ")"
         if not self.mouse_user:
             ret_str = "(" + id + ", " + status + ")\tCat " +\
-                      c_turn + " cat_user_test" + c_pos
+                      c_turn + " " + str(self.cat_user) + c_pos
             return ret_str
 
         m_pos = "("+str(self.mouse)+")"
