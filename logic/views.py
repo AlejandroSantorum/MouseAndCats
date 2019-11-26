@@ -13,7 +13,7 @@ from django.db.models import Q
 
 def anonymous_required(f):
     """
-    anonymous_required
+    anonymous_required (main author: Rafael Sanchez)
     ----------
     Input parameters:
         f: decorated function
@@ -40,7 +40,7 @@ def anonymous_required(f):
 
 def errorHTTP(request, exception=None):
     """
-    errorHTTP
+    errorHTTP (main author: Rafael Sanchez)
     ----------
     Input parameters:
         request: received request
@@ -62,7 +62,7 @@ def errorHTTP(request, exception=None):
 
 def index(request):
     """
-    index
+    index (main author: Alejandro Santorum)
     ----------
     Input parameters:
         request: received request
@@ -82,7 +82,7 @@ def index(request):
 @anonymous_required
 def user_login(request):
     """
-    user_login
+    user_login (main author: Alejandro Santorum)
     ----------
     Input parameters:
         request: received request. In its body receives two strings, username
@@ -115,7 +115,7 @@ def user_login(request):
                 return redirect(next)
             return render(request, "mouse_cat/index.html")
         else:
-            user_form.errors['username'] = [] # TODO: Mirar por qué esto es necesario
+            user_form.errors['username'] = []
             user_form.add_error('username', 'Username/password is not valid')
             context_dict={'user_form': user_form, 'return_service': next}
             return render(request, "mouse_cat/login.html", context_dict)
@@ -127,7 +127,7 @@ def user_login(request):
 
 def user_logout(request):
     """
-    user_logout
+    user_logout (main author: Alejandro Santorum)
     ----------
     Input parameters:
         request: received request. In its body receives nothing
@@ -157,7 +157,7 @@ def user_logout(request):
 @anonymous_required
 def signup(request):
     """
-    signup
+    signup (main author: Rafael Sanchez)
     ----------
     Input parameters:
         request: received request. In its body receives two strings, username
@@ -210,7 +210,7 @@ def signup(request):
 
 def counter(request):
     """
-    counter
+    counter (main author: Alejandro Santorum)
     ----------
     Input parameters:
         request: received request. In its body receives nothing.
@@ -241,7 +241,7 @@ def counter(request):
 @login_required
 def create_game(request):
     """
-    create_game
+    create_game (main author: Rafael Sanchez)
     ----------
     Input parameters:
         request: received request. It contains logged user information.
@@ -264,7 +264,7 @@ def create_game(request):
 @login_required
 def join_game(request):
     """
-    join_game
+    join_game (main author: Rafael Sanchez)
     ----------
     Input parameters:
         request: received request. It contains logged user information.
@@ -292,7 +292,7 @@ def join_game(request):
 @login_required
 def select_game(request, game_id=None):
     """
-    select_game
+    select_game (main author: Alejandro Santorum)
     ----------
     Input parameters:
         method 'GET': received request. It contains logged user information.
@@ -328,7 +328,7 @@ def select_game(request, game_id=None):
 @login_required
 def show_game(request):
     """
-    show_game
+    show_game (main author: Rafael Sanchez)
     ----------
     Input parameters:
         request: received request. It also contains player and
@@ -348,7 +348,7 @@ def show_game(request):
             User is required to be logged.
     """
     if not request.session.get(constants.GAME_SELECTED_SESSION_ID):
-        return redirect(reverse('select_game')) #TODO: ADD EXTRA TEST FOR THIS
+        return redirect(reverse('select_game'))
 
     try:
         game = Game.objects.get(id=request.session.get(constants.GAME_SELECTED_SESSION_ID))
@@ -366,7 +366,7 @@ def show_game(request):
 @login_required
 def move(request):
     """
-    move
+    move (main author: Alejandro Santorum)
     ----------
     Input parameters:
         request: received request. It also contains player, selected game
